@@ -1,0 +1,84 @@
+#!/bin/bash
+
+# Time in seconds
+PMLENGTH=1500
+SBLENGTH=300
+LBLENGTH=900
+
+# Sound notification
+SOUND=true
+SOUNDP=mplayer
+SOUNDF="/usr/local/share/pomodoro/Mira.ogg"
+
+# Localization
+PMTITLE="Pomodoro"
+PMSTART="Start pomodoro?"
+PMSBREAK="Start break?"
+PMLBREAK="Start long break?"
+PMEXIT="Pomodoros today"
+
+# Counter
+PCOUNT=0
+BCOUNT=0
+
+# Prompt functions
+function PPM() {
+	zenity --question --title="$PMTITLE" --text="$PMSTART"
+}
+function PSB() {
+	zenity --question --title="$PMTITLE" --text="$PMSBREAK"
+}
+function PLB() {
+	zenity --question --title="$PMTITLE" --text="$PMLBREAK"
+}
+
+# Sound notify
+function SND() {
+	if $SOUND
+		then
+		$SOUNDP $SOUNDF
+	fi
+}
+
+# Pomodoro functions
+function START() {
+	if PPM
+		then
+		sleep $PMLENGTH
+		let PCOUNT++
+		SND & BREAK
+	else
+		if [ $PCOUNT -gt 0 ]
+			then
+			EXIT
+		fi
+	fi
+}
+function BREAK() {
+	if [ $BCOUNT -eq 3 ]
+		then
+		BCOUNT=0
+		if PLB
+			then
+			sleep $LBLENGTH
+			let BCOUNT++
+			SND & START
+		else
+			EXIT
+		fi
+	else
+		if PSB
+			then
+			sleep $SBLENGTH
+			let BCOUNT++
+			SND & START
+		else
+			EXIT
+		fi
+	fi
+}
+function EXIT() {
+	zenity --info --title="$PMTITLE" --text="$PMEXIT: $PCOUNT"
+}
+
+START
